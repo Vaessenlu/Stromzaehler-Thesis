@@ -5,7 +5,8 @@ Das folgende Projekt wurde als Abschlussarbeit an der Hochschule Pforzheim durch
 
 ## Hinweis
 
-Zur Anpassung der LED codierung müssen die C++ folgenden Libraries angepasst werden: 
+Zur Anpassung der LED codierung müssen die C++ folgenden Libraries angepasst werden.
+Für die anpassungen wurde Visual Studio mit einer C++ IDE verwendet. 
  
  1. app_httpd.cpp
  2. led.c
@@ -37,3 +38,4 @@ Zur Anpassung der LED codierung müssen die C++ folgenden Libraries angepasst we
 2. [Jupyter Notebook download](https://jupyter.org/install) 
 3. [Arduino download](https://www.arduino.cc/en/software)
 4. [LED](https://docs.m5stack.com/en/unit/FlashLight)
+5. [Visual Studio](https://code.visualstudio.com/?wt.mc_id=vscom_downloads)
