@@ -1,5 +1,5 @@
 # Stromzaehler-Thesis 
-Das  folgende Projekt wurde als Abschlussarbeit an der Hochschule Pforzheim erstellt um einen analogen Stromzähler auszulesen. 
+Das folgende Projekt wurde als Abschlussarbeit an der Hochschule Pforzheim durchgeführt, um einen analogen Stromzähler auszulesen.
 
 ![Bildversuchsaufbau](https://github.com/Vaessenlu/Stromzaehler-Thesis/assets/119928392/eadeaf81-7301-438f-9c34-922f3c2bb129)
 
