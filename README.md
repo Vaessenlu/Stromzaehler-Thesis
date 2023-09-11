@@ -5,8 +5,11 @@ Das folgende Projekt wurde als Abschlussarbeit an der Hochschule Pforzheim durch
 
 ## Hinweis
 
-Zur Anpassung der LED codierung müssen die C++ Libraries angepasst werden, mit einer C++ IDE.
-
+Zur Anpassung der LED codierung müssen die C++ folgenden Libraries angepasst werden: 
+ 
+ 1. app_httpd.cpp
+ 2. led.c
+ 3. led.h
 
 ## Benötigte Materialien
 
