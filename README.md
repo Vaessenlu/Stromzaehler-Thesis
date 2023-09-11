@@ -30,7 +30,7 @@ Zur Anpassung der LED codierung müssen die C++ Libraries angepasst werden, mit 
 10. Batch-Datei erstellen und via Windowsaufgabenplanner auslösen    
 
 ## Anhang:
-[Timer Cam X Shop & Dokumentation](https://shop.m5stack.com/products/esp32-psram-timer-camera-x-ov3660?variant=36362228301988)
-[Jupyter Notebook download](https://jupyter.org/install) 
-[Arduino download](https://www.arduino.cc/en/software)
-[LED](https://docs.m5stack.com/en/unit/FlashLight)
+1. [Timer Cam X Shop & Dokumentation](https://shop.m5stack.com/products/esp32-psram-timer-camera-x-ov3660?variant=36362228301988)
+2. [Jupyter Notebook download](https://jupyter.org/install) 
+3. [Arduino download](https://www.arduino.cc/en/software)
+4. [LED](https://docs.m5stack.com/en/unit/FlashLight)
