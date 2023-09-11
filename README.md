@@ -20,17 +20,18 @@ Das folgende Projekt wurde als Abschlussarbeit an der Hochschule Pforzheim durch
 6. [OCR.Space](https://ocr.space/) besuchen und kostenfreien API-Key beantragen
 7. API-Key, Wifi und Dateipfad für CSV in die Platzhalter eintragen
 8. Geflashte Timer Cam X an Zähler montieren mit LEGO Bausteinen und Kreppband
-9. Jupyter Notebook manuell ausführen und Crop Einstellungen anpassen nach Bedarf
+9. Jupyter Notebook manuell ausführen und Crop Einstellungen anpassen, nach Bedarf
 10. Batch-Datei erstellen und via Windowsaufgabenplanner ausführen    
 
 ## Hinweis
 
-Zur Anpassung der LED-Codierung müssen die folgenden C++ Libraries angepasst werden.
-Für die Anpassungen wurde Visual Studio mit einer C++ IDE verwendet. 
- 
+Zum anpassen der LED-Codierung müssen die folgenden C++ Libraries angepasst werden.
+
  1. app_httpd.cpp
  2. led.c
  3. led.h
+    
+Für die Anpassungen wurde Visual Studio mit einer C++ IDE verwendet. 
 
 ## Anhang:
 1. [Timer Cam X Shop & Dokumentation](https://shop.m5stack.com/products/esp32-psram-timer-camera-x-ov3660?variant=36362228301988)
