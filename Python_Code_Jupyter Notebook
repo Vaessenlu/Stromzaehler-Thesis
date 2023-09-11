@@ -1,0 +1,151 @@
+#finale Version
+# Importieren der benötigten Bibliotheken
+import requests
+from PIL import Image
+from io import BytesIO
+import pandas as pd
+from datetime import datetime
+import matplotlib.pyplot as plt
+import time
+
+
+# Definieren der Konstanten
+BILD_URL = ""IP-Adresse Mikrocontroller"/capture"  # URL des Webservers
+API_URL = "https://api.ocr.space/parse/image"  # URL der OCR-API
+API_KEY = "eigenen API-Schlüssel"  # API-Schlüssel
+SPRACHE = "eng"  # Sprache der Zeichen auf dem Bild
+ROTATIONS_GRAD = 180  # Gradzahl der Rotation, die auf das Bild angewendet wird
+MAX_DIFFERENZ = 3  # Maximal zulässiger Unterschied zwischen neuen und alten Zählerwerten
+ZAEHLER_DATEN_DATEI = r"eigener Dateipfad"  # Pfad zur Datei, in der die Zählerdaten gespeichert werden
+# Setzen Sie den Timer auf 15 Minuten (15 Minuten * 60 Sekunden/Minute)
+TIMER_INTERVAL = 15 * 60
+
+# Funktion zum Herunterladen, Drehen und Zuschneiden des Bildes
+def bild_herunterladen_drehen_und_zuschneiden(bild_url, rotations_grad, links, oben, breite, hoehe):
+    # Bild von der URL herunterladen
+    antwort = requests.get(bild_url)
+    img = Image.open(BytesIO(antwort.content))
+
+    # Bild drehen
+    img = img.rotate(rotations_grad)
+
+    # Bild zuschneiden (um 10 in alle Richtungen erweitert, um sicherzustellen, dass der gesamte Zählerstand im Bild ist)
+    img = img.crop((links-10, oben-10, links+breite+10, oben+hoehe+10))
+
+    # Bild in JPEG-Format konvertieren
+    with BytesIO() as ausgabe:
+        img.save(ausgabe, format="JPEG")
+        jpg_daten = ausgabe.getvalue()
+
+    return jpg_daten, img
+
+# Funktion zum Senden der API-Anfrage
+def api_anfrage_senden(api_url, api_key, sprache, jpg_daten):
+    # Parameter für die API-Anfrage festlegen
+    params = {
+        "apikey": api_key,
+        "language": sprache,
+        "OCREngine": 2  # Verwendung von OCR Engine 2
+    }
+
+    # API-Anfrage senden und Antwort zurückgeben
+    antwort = requests.post(api_url, files={"image.jpg": jpg_daten}, data=params)
+    return antwort.json()
+
+# Funktion zum Auffüllen von Nullen
+def nullen_auffuellen_verbessert(alter_wert, neuer_wert):
+    alter_wert_str = str(alter_wert)
+    neuer_wert_str = str(neuer_wert)
+
+    laengen_differenz = len(alter_wert_str) - len(neuer_wert_str)
+
+    # Wenn der neue Wert weniger Ziffern hat, werden fehlende Ziffern von links aufgefüllt
+    if laengen_differenz > 0:
+        neuer_wert_str = alter_wert_str[:laengen_differenz] + neuer_wert_str
+        neuer_wert = int(neuer_wert_str)
+
+    return neuer_wert
+
+# Funktion zur Auswahl des besten Segments bei zu vielen Ziffern
+def bestes_segment_finden(alter_wert, neuer_wert_str, segment_laenge):
+    # Generieren aller möglichen Segmente der gegebenen Länge
+    moegliche_segmente = [neuer_wert_str[i:i+segment_laenge] for i in range(len(neuer_wert_str) - segment_laenge + 1)]
+
+    # Umwandeln der Segmente in Ganzzahlen
+    moegliche_segmente = [int(segment) for segment in moegliche_segmente]
+
+    # Auswahl des Segments, das dem alten Wert am nächsten liegt
+    bestes_segment = min(moegliche_segmente, key=lambda x: abs(x - alter_wert))
+
+    return bestes_segment
+
+# Funktion zum Aktualisieren der Zählerdaten
+def zaehlerdaten_aktualisieren(df, letzter_bekannter_wert, neuer_wert):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    data = [[timestamp, neuer_wert]]
+    df.loc[len(df)] = data[0]
+    df.to_excel(ZAEHLER_DATEN_DATEI, index=False, header=True)
+    return df
+
+# Funktion zur Durchführung der OCR
+def ocr_durchfuehren():
+    # Zählerdaten aus der Excel-Datei laden
+    df = pd.read_excel(ZAEHLER_DATEN_DATEI)
+
+    # Letzten bekannten Zählerstand aus der Excel-Datei extrahieren
+    letzter_bekannter_wert = int(df["Zählerstand"].iloc[-1])
+
+    # Koordinaten für das Zuschneiden des Bildes festlegen
+    links, oben, breite, hoehe = 65.0, 12.0, 155.0, 50.0
+
+    # Bild herunterladen, drehen und zuschneiden
+    jpg_daten, img = bild_herunterladen_drehen_und_zuschneiden(BILD_URL, ROTATIONS_GRAD, links, oben, breite, hoehe)
+
+    # Ausgabe der Koordinaten des zugeschnittenen Bildes
+    print(f"Zugeschnittene Bildkoordinaten: Links={links}, Oben={oben}, Breite={breite}, Hoehe={hoehe}")
+
+    # Anzeigen des zugeschnittenen Bildes
+    plt.imshow(img)
+    plt.show()
+
+    # Senden der API-Anfrage
+    ergebnis = api_anfrage_senden(API_URL, API_KEY, SPRACHE, jpg_daten)
+
+    # Verarbeitung des API-Ergebnisses
+    for parsed_ergebnis in ergebnis.get("ParsedResults", []):
+        parsed_text = parsed_ergebnis.get("ParsedText", "")
+        neuer_wert_str = ''.join(filter(str.isdigit, parsed_text))  # Behalten nur der Ziffern
+        if neuer_wert_str:
+            # Bei zu vielen Ziffern, finde das beste Segment
+            if len(neuer_wert_str) > len(str(letzter_bekannter_wert)):
+                neuer_wert = bestes_segment_finden(letzter_bekannter_wert, neuer_wert_str, len(str(letzter_bekannter_wert)))
+            else:
+                neuer_wert = int(neuer_wert_str)
+
+            print(f"Vorheriger Zählerstand: {neuer_wert} kw/h")
+
+            # Korrektur von Werten mit weniger Ziffern
+            if len(str(neuer_wert)) < len(str(letzter_bekannter_wert)):
+                neuer_wert = nullen_auffuellen_verbessert(letzter_bekannter_wert, neuer_wert)
+
+            # Plausibilitätsprüfung und eventuelle Korrektur
+            if neuer_wert < letzter_bekannter_wert or neuer_wert - letzter_bekannter_wert > MAX_DIFFERENZ:  # Erhöhter Spielraum für Korrekturen
+                print(f"Unplausibler Wert erkannt: {neuer_wert}")
+                continue
+
+            print(f"Vorheriger Zählerstand: {letzter_bekannter_wert} kw/h")
+            print(f"Neuer Zählerstand: {neuer_wert} kw/h")
+
+            df = zaehlerdaten_aktualisieren(df, letzter_bekannter_wert, neuer_wert)
+            letzter_bekannter_wert = neuer_wert
+
+    print("Ergebnisse für die Excel-Datei:")
+    print(df)
+
+    print("API-Antwort:")
+    print(ergebnis)
+
+# Durchführung der OCR
+while True:
+    ocr_durchfuehren()
+    time.sleep(TIMER_INTERVAL)
